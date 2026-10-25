@@ -166,7 +166,7 @@
 
     <section class="sec">
       <div class="field">
-        <p class="lbl">윗줄 문구 <span>작은 글씨 · 라벨</span></p>
+        <p class="lbl">윗줄 문구 <span>강조 팝·라벨·손글씨에만 표시</span></p>
         <input type="text" data-k="top" placeholder="예: 놓치면 아까운">
       </div>
       <div class="field">
@@ -408,9 +408,8 @@ const TEMPLATES = [
       ctx.save(); ctx.strokeStyle=S.text; ctx.lineWidth=8*k; ctx.strokeRect(m,m,W-2*m,H-2*m); ctx.restore();
       const maxW=W-2*m-90*k, tf=c.tf('blackhan'), foot=S.footer.trim()?90*k:0;
       stack(ctx,[
-        blk(ctx,S.top,s=>F('pretendard',300,s),86*k,maxW,{lh:1.3,color:S.text,ls:-1}),
-        blk(ctx,S.title,s=>F(tf,900,s),170*k*c.sc,maxW,{lh:1.08,gap:6*k,color:S.text,accent:S.accent,ls:-2}),
-        blk(ctx,S.sub,s=>F('pretendard',400,s),40*k,maxW,{lh:1.4,gap:30*k,color:S.text,alpha:.85}),
+        blk(ctx,S.title,s=>F(tf,900,s),190*k*c.sc,maxW,{lh:1.08,color:S.text,accent:S.accent,ls:-2}),
+        blk(ctx,S.sub,s=>F('pretendard',400,s),42*k,maxW,{lh:1.4,gap:40*k,color:S.text,alpha:.85}),
       ],{x:W/2,align:'center',cy:(H-foot)/2,maxH:H-2*m-foot-60*k});
       label(ctx,S.footer,F('pretendard',600,32*k),W/2,H-m-48*k,'center',S.text,.92,{ls:1});
   }},
@@ -438,10 +437,9 @@ const TEMPLATES = [
       ctx.fillStyle=g; ctx.fillRect(0,0,W,H);
       const x=90*k, maxW=W-2*x, tf=c.tf('pretendard');
       stack(ctx,[
-        blk(ctx,S.top,s=>F('pretendard',400,s),96*k,maxW,{lh:1.22,color:S.text,ls:-2}),
-        blk(ctx,S.title,s=>F(tf,800,s),96*k*c.sc,maxW,{lh:1.22,color:S.text,accent:S.accent,ls:-2}),
-        blk(ctx,S.sub,s=>F('pretendard',400,s),38*k,maxW,{lh:1.4,gap:32*k,color:S.text,alpha:.92}),
-      ],{x,align:'left',top:H*.12,maxH:H*.88-H*.12-150*k});
+        blk(ctx,S.title,s=>F(tf,800,s),140*k*c.sc,maxW,{lh:1.18,color:S.text,accent:S.accent,ls:-2}),
+        blk(ctx,S.sub,s=>F('pretendard',400,s),40*k,maxW,{lh:1.4,gap:36*k,color:S.text,alpha:.92}),
+      ],{x,align:'left',top:H*.2,maxH:H*.8-150*k});
       // 북마크 아이콘
       const bw=34*k,bh=46*k,bx=W-60*k-bw,by=48*k;
       ctx.save(); ctx.strokeStyle=S.text; ctx.lineWidth=4*k; ctx.lineJoin='round'; ctx.beginPath();
@@ -501,10 +499,9 @@ const TEMPLATES = [
       ctx.beginPath(); ctx.moveTo(m,H-m-arm*.7); ctx.lineTo(m,H-m); ctx.lineTo(W*.42,H-m); ctx.stroke(); ctx.restore();
       const x=m, maxW=W-2*m, tf=c.tf('pretendard');
       stack(ctx,[
-        blk(ctx,S.top,s=>F('pretendard',500,s),104*k,maxW,{lh:1.2,color:S.text,ls:-2}),
-        blk(ctx,S.title,s=>F(tf,800,s),116*k*c.sc,maxW,{lh:1.18,color:S.text,accent:S.accent,ls:-2}),
-        blk(ctx,S.sub,s=>F('pretendard',300,s),34*k,maxW,{lh:1.4,gap:24*k,color:S.text,alpha:.75}),
-      ],{x,align:'left',cy:H*.57,maxH:H-2*m-2*arm*.8});
+        blk(ctx,S.title,s=>F(tf,800,s),140*k*c.sc,maxW,{lh:1.18,color:S.text,accent:S.accent,ls:-2}),
+        blk(ctx,S.sub,s=>F('pretendard',300,s),38*k,maxW,{lh:1.4,gap:30*k,color:S.text,alpha:.75}),
+      ],{x,align:'left',cy:H*.56,maxH:H-2*m-2*arm*.8});
       label(ctx,S.footer,F('pretendard',500,28*k),W-m,H-m,'right',S.text,.85);
   }},
 ];
