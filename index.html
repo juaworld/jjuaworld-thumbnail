@@ -1,0 +1,643 @@
+<!doctype html>
+<html lang="ko">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>쭈아월드 썸네일</title>
+<meta name="description" content="쭈아월드 블로그 썸네일을 30초 만에 만드는 도구">
+<link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 64 64'%3E%3Crect width='64' height='64' rx='14' fill='%234b2fa6'/%3E%3Ccircle cx='32' cy='32' r='14' fill='none' stroke='%23ffd43b' stroke-width='5'/%3E%3C/svg%3E">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Black+Han+Sans&family=Do+Hyeon&family=Jua&family=Nanum+Pen+Script&display=swap">
+<link rel="stylesheet" href="https://cdn.jsdelivr.net/gh/orioncactus/pretendard@v1.3.9/dist/web/variable/pretendardvariable-dynamic-subset.min.css">
+<style>
+  :root{
+    --bg:#eef1f5; --card:#fff; --ink:#111827; --sub:#6b7280; --line:#e5e7eb;
+    --field:#f6f7f9; --brand:#4b2fa6; --accent:#ffd43b;
+  }
+  *{box-sizing:border-box}
+  body{margin:0;background:var(--bg);color:var(--ink);
+    font-family:'Pretendard Variable',Pretendard,system-ui,-apple-system,'Malgun Gothic',sans-serif;
+    -webkit-font-smoothing:antialiased}
+  button,input,select,textarea{font:inherit;color:inherit}
+
+  /* header */
+  .top{position:sticky;top:0;z-index:10;display:flex;align-items:center;justify-content:space-between;
+    gap:12px;padding:12px 24px;background:rgba(255,255,255,.92);backdrop-filter:blur(8px);border-bottom:1px solid var(--line)}
+  .brand{display:flex;align-items:center;gap:12px;min-width:0}
+  .mark{width:38px;height:38px;border-radius:10px;background:var(--brand);display:grid;place-items:center;flex:none}
+  .mark{background:linear-gradient(135deg,#3b2a8f,#e2557a)}
+  .mark i{width:20px;height:20px;border:3px solid var(--accent);border-radius:50%}
+  .brand b{display:block;font-size:17px;font-weight:800;letter-spacing:-.3px}
+  .brand small{display:block;color:var(--sub);font-size:12.5px}
+  .blog{flex:none;text-decoration:none;font-weight:700;font-size:14px;color:#fff;background:#03c75a;
+    padding:9px 14px;border-radius:999px;white-space:nowrap}
+  .blog:hover{filter:brightness(.95)}
+
+  /* layout */
+  .layout{display:grid;grid-template-columns:410px minmax(0,1fr);gap:24px;padding:24px;max-width:1440px;margin:0 auto;align-items:start}
+  .panel{background:var(--card);border-radius:20px;padding:22px;box-shadow:0 1px 2px rgba(0,0,0,.04),0 8px 24px rgba(17,24,39,.06)}
+  .panel-head{display:flex;align-items:center;justify-content:space-between;margin-bottom:18px}
+  .panel-head h1{margin:0;font-size:20px;font-weight:800}
+  .sec{padding:16px 0;border-top:1px solid var(--line)}
+  .sec:first-of-type{border-top:0;padding-top:0}
+  .lbl{display:flex;justify-content:space-between;align-items:baseline;font-size:13px;font-weight:700;margin:0 0 8px}
+  .lbl span{font-weight:500;color:var(--sub);font-size:12px}
+  .hint{font-size:12px;color:var(--sub);line-height:1.55;margin:6px 0 0}
+  .hint code{background:#fff6cc;color:#7a5b00;padding:1px 5px;border-radius:4px;font-family:inherit;font-weight:700}
+
+  .btn{border:0;border-radius:12px;padding:11px 14px;font-weight:700;cursor:pointer;background:var(--field);transition:filter .15s}
+  .btn:hover{filter:brightness(.96)}
+  .btn.dark{background:var(--ink);color:#fff}
+  .btn.brand{background:var(--brand);color:#fff}
+  .btn.sm{padding:8px 12px;font-size:13px;border-radius:10px}
+
+  /* templates */
+  .tpls{display:grid;grid-template-columns:repeat(3,1fr);gap:8px}
+  .tpl{border:2px solid transparent;border-radius:12px;padding:0;background:var(--field);cursor:pointer;overflow:hidden;text-align:center}
+  .tpl canvas{display:block;width:100%;height:auto}
+  .tpl span{display:block;font-size:12px;font-weight:700;padding:6px 0 7px}
+  .tpl.on{border-color:var(--ink);background:#fff}
+
+  .seg{display:grid;grid-template-columns:repeat(3,1fr);gap:6px;background:var(--field);padding:4px;border-radius:12px}
+  .seg button{border:0;background:transparent;border-radius:9px;padding:8px 0;font-weight:700;font-size:13px;cursor:pointer;color:var(--sub)}
+  .seg button.on{background:#fff;color:var(--ink);box-shadow:0 1px 3px rgba(0,0,0,.1)}
+
+  .drop{display:flex;align-items:center;gap:12px;padding:14px;border:1.5px dashed #cfd5dd;border-radius:14px;background:var(--field);cursor:pointer}
+  .drop:hover,.drop.over{border-color:var(--brand);background:#eef3f9}
+  .drop .ic{width:38px;height:38px;border-radius:10px;background:#fff;display:grid;place-items:center;flex:none;font-size:18px}
+  .drop b{display:block;font-size:14px}
+  .drop small{color:var(--sub);font-size:12px}
+  .drop input{display:none}
+
+  .row{display:grid;grid-template-columns:1fr 64px;gap:10px;align-items:center;margin-top:12px}
+  .row .lbl{grid-column:1/-1;margin:0}
+  .two{display:grid;grid-template-columns:1fr 1fr;gap:14px}
+  input[type=range]{width:100%;accent-color:var(--ink)}
+  input[type=number],input[type=text],textarea,select{width:100%;border:1px solid var(--line);background:#fff;border-radius:10px;padding:9px 10px;outline:none}
+  input[type=number]{padding:8px 6px;text-align:center}
+  input:focus,textarea:focus,select:focus{border-color:var(--ink)}
+  textarea{resize:vertical;min-height:84px;line-height:1.5}
+  .field+.field{margin-top:12px}
+  .colors{display:grid;grid-template-columns:repeat(3,1fr);gap:8px}
+  .color{display:flex;align-items:center;gap:8px;background:var(--field);border-radius:10px;padding:6px 8px;font-size:12px;font-weight:700;cursor:pointer}
+  .color input{width:28px;height:28px;border:0;padding:0;background:none;cursor:pointer;flex:none}
+  .actions{display:grid;grid-template-columns:1fr 1fr;gap:8px;margin-top:4px}
+  .actions .wide{grid-column:1/-1;padding:14px;font-size:15px}
+  .link{background:none;border:0;color:var(--sub);font-size:12px;text-decoration:underline;cursor:pointer;padding:0}
+
+  /* stage */
+  .stage{position:sticky;top:86px;display:flex;flex-direction:column;align-items:center;gap:14px}
+  .wrap{position:relative;width:100%;border-radius:6px;overflow:hidden;box-shadow:0 20px 50px rgba(17,24,39,.22);background:#1b2a3a}
+  .wrap canvas{display:block;width:100%;height:auto;touch-action:none}
+  .wrap.has-img canvas{cursor:grab}
+  .wrap.has-img canvas:active{cursor:grabbing}
+  .empty{position:absolute;left:50%;bottom:7%;transform:translateX(-50%);background:rgba(255,255,255,.95);color:var(--ink);
+    padding:8px 14px;border-radius:999px;font-size:13px;font-weight:700;white-space:nowrap;pointer-events:none;box-shadow:0 4px 14px rgba(0,0,0,.2)}
+  .wrap.has-img .empty{display:none}
+  .stage-tip{font-size:12.5px;color:var(--sub);text-align:center}
+
+  .toast{position:fixed;left:50%;bottom:28px;transform:translate(-50%,20px);opacity:0;background:var(--ink);color:#fff;
+    padding:11px 18px;border-radius:999px;font-size:14px;font-weight:600;transition:.25s;pointer-events:none;z-index:20}
+  .toast.show{opacity:1;transform:translate(-50%,0)}
+
+  @media (max-width:920px){
+    .layout{grid-template-columns:1fr;padding:16px;gap:16px}
+    .stage{position:static;order:-1}
+    .wrap{max-width:100% !important}
+    .top{padding:10px 16px}
+    .brand small{display:none}
+  }
+</style>
+</head>
+<body>
+
+<header class="top">
+  <div class="brand">
+    <div class="mark"><i></i></div>
+    <div><b>쭈아월드 썸네일</b><small>쭈아월드 블로그 썸네일, 30초 만에</small></div>
+  </div>
+  <a class="blog" href="https://blog.naver.com/hbokey" target="_blank" rel="noopener">블로그 바로가기 ↗</a>
+</header>
+
+<main class="layout">
+  <aside class="panel">
+    <div class="panel-head">
+      <h1>썸네일 편집</h1>
+      <button class="btn dark sm" id="saveDefault" title="현재 문구·색상·템플릿을 다음에도 쓰도록 저장">기본설정 저장</button>
+    </div>
+
+    <section class="sec">
+      <p class="lbl">템플릿 <span>클릭해서 바꾸기</span></p>
+      <div class="tpls" id="tpls"></div>
+    </section>
+
+    <section class="sec">
+      <p class="lbl">배경 이미지 <button class="link" id="clearImg">이미지 지우기</button></p>
+      <label class="drop" id="drop">
+        <div class="ic">🖼</div>
+        <div><b>사진 선택 또는 끌어다 놓기</b><small>Ctrl+V로 붙여넣기도 돼요</small></div>
+        <input type="file" id="file" accept="image/*">
+      </label>
+      <div class="row">
+        <p class="lbl">이미지 크기 <span>%</span></p>
+        <input type="range" data-k="zoom" min="50" max="300" step="1">
+        <input type="number" data-k="zoom" min="50" max="300">
+      </div>
+      <div class="two">
+        <div class="row" style="grid-template-columns:1fr 58px">
+          <p class="lbl">X 위치</p>
+          <input type="range" data-k="x" min="-600" max="600">
+          <input type="number" data-k="x">
+        </div>
+        <div class="row" style="grid-template-columns:1fr 58px">
+          <p class="lbl">Y 위치</p>
+          <input type="range" data-k="y" min="-600" max="600">
+          <input type="number" data-k="y">
+        </div>
+      </div>
+      <div class="row">
+        <p class="lbl">배경 어둡기 <span>글자가 잘 보이게</span></p>
+        <input type="range" data-k="overlay" min="0" max="90">
+        <input type="number" data-k="overlay" min="0" max="90">
+      </div>
+      <p class="hint">미리보기에서 사진을 드래그하면 위치, 마우스 휠로 크기를 바꿀 수 있어요.</p>
+    </section>
+
+    <section class="sec">
+      <div class="field">
+        <p class="lbl">윗줄 문구 <span>작은 글씨 · 라벨</span></p>
+        <input type="text" data-k="top" placeholder="예: 놓치면 아까운">
+      </div>
+      <div class="field">
+        <p class="lbl">큰 제목 <span>Enter로 줄바꿈</span></p>
+        <textarea data-k="title" rows="3"></textarea>
+        <p class="hint">강조할 글자는 <code>*별표*</code>로 감싸세요 → 강조색으로 바뀝니다.</p>
+      </div>
+      <div class="field">
+        <p class="lbl">부제목</p>
+        <input type="text" data-k="sub" placeholder="예: 쭈아월드가 직접 골랐어요">
+      </div>
+      <div class="field">
+        <p class="lbl">하단 이름 <span>비우면 숨김</span></p>
+        <input type="text" data-k="footer" placeholder="쭈아월드">
+      </div>
+    </section>
+
+    <section class="sec">
+      <div class="two">
+        <div>
+          <p class="lbl">제목 글꼴</p>
+          <select data-k="font" id="fontSel"></select>
+        </div>
+        <div>
+          <p class="lbl">제목 크기 <span>%</span></p>
+          <div style="display:grid;grid-template-columns:1fr 58px;gap:8px;align-items:center">
+            <input type="range" data-k="scale" min="60" max="140">
+            <input type="number" data-k="scale" min="60" max="140">
+          </div>
+        </div>
+      </div>
+      <p class="lbl" style="margin-top:14px">색상</p>
+      <div class="colors">
+        <label class="color"><input type="color" data-k="text">글자</label>
+        <label class="color"><input type="color" data-k="accent">강조</label>
+        <label class="color"><input type="color" data-k="brand">브랜드</label>
+      </div>
+    </section>
+
+    <section class="sec">
+      <div class="actions">
+        <button class="btn" id="reset">초기화</button>
+        <button class="btn" id="copy">이미지 복사</button>
+        <button class="btn dark wide" id="download">PNG 저장</button>
+      </div>
+      <p class="hint">‘이미지 복사’ 후 네이버 블로그 에디터에 바로 Ctrl+V 하면 붙여넣어져요.</p>
+    </section>
+  </aside>
+
+  <section class="stage" id="stage">
+    <div class="wrap" id="wrap">
+      <canvas id="main" aria-label="썸네일 미리보기"></canvas>
+      <div class="empty">배경 사진을 올리면 더 멋져져요</div>
+    </div>
+    <p class="stage-tip" id="sizeTip"></p>
+  </section>
+</main>
+
+<div class="toast" id="toast"></div>
+
+<div class="gate" id="gate">
+  <form class="gate-card" id="gateForm">
+    <div class="mark"><i></i></div>
+    <h2>쭈아월드 썸네일</h2>
+    <p>비밀번호를 입력해 주세요</p>
+    <input type="password" id="gatePw" autocomplete="current-password" placeholder="비밀번호" autofocus>
+    <button class="btn dark" type="submit">들어가기</button>
+    <small id="gateMsg"></small>
+  </form>
+</div>
+<style>
+  .gate{position:fixed;inset:0;z-index:50;display:grid;place-items:center;padding:16px;
+    background:linear-gradient(135deg,#3b2a8f,#7a3bb0 60%,#e2557a)}
+  .gate.hide{display:none}
+  .gate-card{width:min(360px,100%);background:#fff;border-radius:22px;padding:30px 26px;text-align:center;
+    box-shadow:0 24px 60px rgba(0,0,0,.3);display:flex;flex-direction:column;gap:10px;align-items:center}
+  .gate-card .mark{width:52px;height:52px;border-radius:14px}
+  .gate-card h2{margin:6px 0 0;font-size:21px;font-weight:800}
+  .gate-card p{margin:0 0 6px;color:var(--sub);font-size:14px}
+  .gate-card input,.gate-card button{width:100%}
+  .gate-card input{padding:12px;text-align:center}
+  .gate-card button{padding:12px}
+  .gate-card small{color:#e11d48;font-size:13px;min-height:16px}
+</style>
+<script>
+(()=>{
+  const HASH='9b43368f08580d8ad4c52e4ca96cd319df14195343ad6fc36c2582fab95b2f1f', KEY='jjuaworld:ok';
+  const gate=document.getElementById('gate');
+  try{ if(localStorage.getItem(KEY)===HASH) gate.classList.add('hide') }catch(e){}
+  async function sha(s){
+    const b=await crypto.subtle.digest('SHA-256',new TextEncoder().encode(s));
+    return [...new Uint8Array(b)].map(x=>x.toString(16).padStart(2,'0')).join('');
+  }
+  document.getElementById('gateForm').addEventListener('submit',async e=>{
+    e.preventDefault();
+    const pw=document.getElementById('gatePw');
+    if(await sha(pw.value)===HASH){
+      try{ localStorage.setItem(KEY,HASH) }catch(e){}
+      gate.classList.add('hide');
+    } else {
+      document.getElementById('gateMsg').textContent='비밀번호가 맞지 않아요';
+      pw.select();
+    }
+  });
+})();
+</script>
+
+<script>
+/* ---------- 설정 ---------- */
+const FONTS = {
+  auto:       { label:'템플릿 기본' },
+  pretendard: { label:'프리텐다드', family:"'Pretendard Variable', Pretendard, sans-serif", variable:true },
+  blackhan:   { label:'검은고딕', family:"'Black Han Sans', sans-serif" },
+  dohyeon:    { label:'도현', family:"'Do Hyeon', sans-serif" },
+  jua:        { label:'주아', family:"'Jua', sans-serif" },
+  pen:        { label:'나눔 손글씨 펜', family:"'Nanum Pen Script', cursive" },
+};
+const RATIOS = { '1:1':[1000,1000], '4:3':[1000,750], '16:9':[1000,563] };
+
+const FACTORY = {
+  tpl:'frame', ratio:'1:1',
+  top:'놓치면 아까운',
+  title:'쭈아월드\n*추천 리스트*',
+  sub:'쭈아월드가 직접 골랐어요',
+  footer:'쭈아월드',
+  text:'#ffffff', accent:'#ffd43b', brand:'#4b2fa6',
+  overlay:55, font:'auto', scale:100, zoom:100, x:0, y:0,
+};
+
+const store = {
+  get(k){ try{ return JSON.parse(localStorage.getItem(k)) || null }catch(e){ return null } },
+  set(k,v){ try{ localStorage.setItem(k, JSON.stringify(v)) }catch(e){} },
+};
+const DEF_KEY='jjuaworld:defaults', LAST_KEY='jjuaworld:last';
+let S = { ...FACTORY, ...(store.get(DEF_KEY)||{}), ...(store.get(LAST_KEY)||{}), ratio:'1:1', zoom:100, x:0, y:0 };
+let img = null;
+
+/* ---------- 그리기 도구 ---------- */
+function F(key, weight, size){
+  const f = FONTS[key] || FONTS.pretendard;
+  return `${f.variable ? weight : 400} ${size}px ${f.family}`;
+}
+function plain(s){ return s.replace(/\*([^*]+)\*/g,'$1') }
+function segs(line){
+  const out=[], re=/\*([^*]+)\*/g; let i=0, m;
+  while((m=re.exec(line))){ if(m.index>i) out.push({t:line.slice(i,m.index),a:false}); out.push({t:m[1],a:true}); i=re.lastIndex }
+  if(i<line.length) out.push({t:line.slice(i),a:false});
+  return out;
+}
+function setLS(ctx,px){ if('letterSpacing' in ctx) ctx.letterSpacing = px.toFixed(2)+'px' }
+function rr(ctx,x,y,w,h,r){
+  r=Math.min(r,h/2,w/2); ctx.beginPath();
+  ctx.moveTo(x+r,y); ctx.arcTo(x+w,y,x+w,y+h,r); ctx.arcTo(x+w,y+h,x,y+h,r);
+  ctx.arcTo(x,y+h,x,y,r); ctx.arcTo(x,y,x+w,y,r); ctx.closePath();
+}
+function shade(ctx,W,H,a,color='0,0,0'){ ctx.fillStyle=`rgba(${color},${a})`; ctx.fillRect(0,0,W,H) }
+
+// 한 줄을 *강조* 구간까지 반영해서 그림. 그린 폭을 돌려줌.
+function drawLine(ctx,line,x,y,align,color,accent,marker,size){
+  const parts=segs(line), ws=parts.map(p=>ctx.measureText(p.t).width);
+  const total=ws.reduce((a,b)=>a+b,0);
+  let cx = align==='center' ? x-total/2 : align==='right' ? x-total : x;
+  ctx.textAlign='left';
+  parts.forEach((p,i)=>{
+    if(p.a && marker){
+      ctx.save(); ctx.shadowColor='transparent'; ctx.fillStyle=accent; ctx.globalAlpha*=.9;
+      ctx.fillRect(cx-size*.03, y+size*.04, ws[i]+size*.04, size*.34); ctx.restore();
+      ctx.fillStyle=color;
+    } else ctx.fillStyle = p.a ? accent : color;
+    ctx.fillText(p.t,cx,y); cx+=ws[i];
+  });
+  return total;
+}
+
+// 텍스트 블록: 가로 폭에 맞게 자동 축소
+function blk(ctx,text,font,size,maxW,o={}){
+  if(!text || !text.trim()) return null;
+  const lines=text.split('\n'), ls=o.ls||0;
+  ctx.save(); ctx.font=font(size); setLS(ctx,ls*size/100);
+  const w=Math.max(...lines.map(l=>ctx.measureText(plain(l)).width)); ctx.restore();
+  if(w>maxW) size*=maxW/w;
+  return { lines, font, size, ls, lh:o.lh||1.2, gap:o.gap||0, color:o.color||'#fff',
+    accent:o.accent||o.color||'#fff', alpha:o.alpha??1, shadow:o.shadow, marker:o.marker, custom:o.custom };
+}
+
+// 블록들을 세로로 쌓기 (top 기준 또는 cy 중앙 기준), maxH 넘으면 전체 축소
+function stack(ctx,blocks,o){
+  const bs=blocks.filter(Boolean);
+  const total=()=>bs.reduce((t,b,i)=>t+b.lines.length*b.size*b.lh+(i?b.gap:0),0);
+  let T=total();
+  if(o.maxH && T>o.maxH){ const f=o.maxH/T; bs.forEach(b=>{b.size*=f; b.gap*=f}); T=total() }
+  let y = o.top!=null ? o.top : o.cy-T/2;
+  bs.forEach((b,i)=>{
+    if(i) y+=b.gap;
+    const h=b.lines.length*b.size*b.lh;
+    ctx.save(); ctx.font=b.font(b.size); setLS(ctx,b.ls*b.size/100);
+    ctx.globalAlpha=b.alpha; ctx.textBaseline='middle';
+    if(b.shadow){ ctx.shadowColor=b.shadow[0]; ctx.shadowBlur=b.shadow[1]; ctx.shadowOffsetY=b.shadow[2] }
+    if(b.custom) b.custom(ctx,b,o.x,y,h,o.align);
+    else b.lines.forEach((l,j)=>drawLine(ctx,l,o.x,y+b.size*b.lh*(j+.5),o.align,b.color,b.accent,b.marker,b.size));
+    ctx.restore(); y+=h;
+  });
+}
+
+function label(ctx,text,font,x,y,align,color,alpha=1,opt={}){
+  if(!text || !text.trim()) return 0;
+  ctx.save(); ctx.font=font; setLS(ctx,opt.ls||0); ctx.globalAlpha=alpha;
+  ctx.textBaseline='middle'; ctx.fillStyle=color; ctx.textAlign=align;
+  if(opt.shadow){ ctx.shadowColor='rgba(0,0,0,.45)'; ctx.shadowBlur=opt.shadow; ctx.shadowOffsetY=2 }
+  ctx.fillText(text,x,y); const w=ctx.measureText(text).width; ctx.restore(); return w;
+}
+
+/* ---------- 배경 ---------- */
+function drawBg(ctx,W,H){
+  if(img){
+    const base=Math.max(W/img.naturalWidth,H/img.naturalHeight)*S.zoom/100;
+    const w=img.naturalWidth*base, h=img.naturalHeight*base;
+    ctx.drawImage(img,(W-w)/2+S.x,(H-h)/2+S.y,w,h);
+    return;
+  }
+  // 사진이 없을 땐 쭈아월드 기본 배경 (보라→핑크 그라데이션 + 반짝이)
+  const g=ctx.createLinearGradient(0,0,W,H);
+  g.addColorStop(0,'#3b2a8f'); g.addColorStop(.6,'#7a3bb0'); g.addColorStop(1,'#e2557a');
+  ctx.fillStyle=g; ctx.fillRect(0,0,W,H);
+  ctx.strokeStyle='rgba(255,255,255,.12)'; ctx.lineWidth=3;
+  ctx.beginPath(); ctx.arc(W*.86,H*.18,H*.22,0,Math.PI*2); ctx.stroke();
+  ctx.beginPath(); ctx.ellipse(W*.86,H*.18,H*.36,H*.07,-.35,0,Math.PI*2); ctx.stroke();
+  ctx.fillStyle='rgba(255,255,255,.35)';
+  [[.12,.14,5],[.24,.82,4],[.9,.7,6],[.66,.9,3],[.08,.55,3],[.42,.06,4]].forEach(([x,y,r])=>{
+    ctx.beginPath(); ctx.arc(W*x,H*y,r,0,Math.PI*2); ctx.fill();
+  });
+}
+
+/* ---------- 템플릿 ---------- */
+const TEMPLATES = [
+  { id:'frame', name:'프레임', overlay:55, draw(c){
+      const {ctx,W,H,k}=c; shade(ctx,W,H,S.overlay/100);
+      const m=60*k;
+      ctx.save(); ctx.strokeStyle=S.text; ctx.lineWidth=8*k; ctx.strokeRect(m,m,W-2*m,H-2*m); ctx.restore();
+      const maxW=W-2*m-90*k, tf=c.tf('blackhan'), foot=S.footer.trim()?90*k:0;
+      stack(ctx,[
+        blk(ctx,S.top,s=>F('pretendard',300,s),86*k,maxW,{lh:1.3,color:S.text,ls:-1}),
+        blk(ctx,S.title,s=>F(tf,900,s),170*k*c.sc,maxW,{lh:1.08,gap:6*k,color:S.text,accent:S.accent,ls:-2}),
+        blk(ctx,S.sub,s=>F('pretendard',400,s),40*k,maxW,{lh:1.4,gap:30*k,color:S.text,alpha:.85}),
+      ],{x:W/2,align:'center',cy:(H-foot)/2,maxH:H-2*m-foot-60*k});
+      label(ctx,S.footer,F('pretendard',600,32*k),W/2,H-m-48*k,'center',S.text,.92,{ls:1});
+  }},
+  { id:'pop', name:'강조 팝', overlay:15, draw(c){
+      const {ctx,W,H,k}=c; shade(ctx,W,H,S.overlay/100);
+      const maxW=W-120*k, tf=c.tf('blackhan'), sh=['rgba(0,0,0,.45)',30*k,6*k];
+      const pill=S.sub.trim()?200*k:40*k, head=S.footer.trim()?100*k:40*k;
+      stack(ctx,[
+        blk(ctx,S.top,s=>F('pretendard',800,s),62*k,maxW,{lh:1.35,color:S.text,shadow:sh,ls:-1}),
+        blk(ctx,S.title,s=>F(tf,900,s),190*k*c.sc,maxW,{lh:1.05,gap:8*k,color:S.text,accent:S.accent,shadow:sh,ls:-3}),
+      ],{x:W/2,align:'center',cy:(head+H-pill)/2,maxH:H-head-pill});
+      if(S.sub.trim()){
+        let sz=44*k; ctx.save(); ctx.font=F('pretendard',700,sz);
+        let w=ctx.measureText(S.sub).width; if(w>maxW-90*k){ sz*= (maxW-90*k)/w; ctx.font=F('pretendard',700,sz); w=ctx.measureText(S.sub).width }
+        const ph=sz*1.9, pw=w+sz*1.8, cy=H-115*k;
+        ctx.shadowColor='rgba(0,0,0,.25)'; ctx.shadowBlur=20*k; ctx.shadowOffsetY=4*k;
+        rr(ctx,W/2-pw/2,cy-ph/2,pw,ph,ph/2); ctx.fillStyle='#fff'; ctx.fill(); ctx.restore();
+        label(ctx,S.sub,F('pretendard',700,sz),W/2,cy+1,'center',S.brand);
+      }
+      label(ctx,S.footer,F('pretendard',700,28*k),W/2,58*k,'center',S.text,.95,{ls:4,shadow:12*k});
+  }},
+  { id:'mag', name:'매거진', overlay:40, draw(c){
+      const {ctx,W,H,k}=c; shade(ctx,W,H,S.overlay/100);
+      const g=ctx.createLinearGradient(0,H*.5,0,H); g.addColorStop(0,'rgba(0,0,0,0)'); g.addColorStop(1,'rgba(0,0,0,.35)');
+      ctx.fillStyle=g; ctx.fillRect(0,0,W,H);
+      const x=90*k, maxW=W-2*x, tf=c.tf('pretendard');
+      stack(ctx,[
+        blk(ctx,S.top,s=>F('pretendard',400,s),96*k,maxW,{lh:1.22,color:S.text,ls:-2}),
+        blk(ctx,S.title,s=>F(tf,800,s),96*k*c.sc,maxW,{lh:1.22,color:S.text,accent:S.accent,ls:-2}),
+        blk(ctx,S.sub,s=>F('pretendard',400,s),38*k,maxW,{lh:1.4,gap:32*k,color:S.text,alpha:.92}),
+      ],{x,align:'left',top:H*.12,maxH:H*.88-H*.12-150*k});
+      // 북마크 아이콘
+      const bw=34*k,bh=46*k,bx=W-60*k-bw,by=48*k;
+      ctx.save(); ctx.strokeStyle=S.text; ctx.lineWidth=4*k; ctx.lineJoin='round'; ctx.beginPath();
+      ctx.moveTo(bx,by); ctx.lineTo(bx+bw,by); ctx.lineTo(bx+bw,by+bh); ctx.lineTo(bx+bw/2,by+bh*.7); ctx.lineTo(bx,by+bh); ctx.closePath(); ctx.stroke(); ctx.restore();
+      // 하단 라인 + 이름
+      const ly=H-70*k, fw=label(ctx,S.footer,F('pretendard',600,30*k),W-60*k,ly,'right',S.text);
+      ctx.save(); ctx.strokeStyle=S.text; ctx.lineWidth=3*k; ctx.beginPath();
+      ctx.moveTo(60*k,ly); ctx.lineTo(W-60*k-(fw?fw+30*k:0),ly); ctx.stroke(); ctx.restore();
+  }},
+  { id:'label', name:'라벨', overlay:55, draw(c){
+      const {ctx,W,H,k}=c;
+      const g=ctx.createLinearGradient(0,0,0,H*.62); g.addColorStop(0,`rgba(255,255,255,${S.overlay/100})`); g.addColorStop(1,'rgba(255,255,255,0)');
+      ctx.fillStyle=g; ctx.fillRect(0,0,W,H);
+      const g2=ctx.createLinearGradient(0,H*.68,0,H); g2.addColorStop(0,'rgba(0,0,0,0)'); g2.addColorStop(1,'rgba(0,0,0,.4)');
+      ctx.fillStyle=g2; ctx.fillRect(0,0,W,H);
+      const x=80*k, maxW=W-2*x, tf=c.tf('dohyeon');
+      stack(ctx,[
+        blk(ctx,S.top,s=>F('pretendard',700,s),38*k,maxW-60*k,{lh:1.9,custom(ctx,b,x,y,h){
+          const w=ctx.measureText(b.lines[0]).width, pad=b.size*.65, bh=b.size*1.6;
+          rr(ctx,x,y+(h-bh)/2,w+pad*2,bh,12*k); ctx.fillStyle=S.brand; ctx.fill();
+          ctx.fillStyle='#fff'; ctx.textAlign='left'; ctx.fillText(b.lines[0],x+pad,y+h/2+1);
+        }}),
+        blk(ctx,S.title,s=>F(tf,900,s),128*k*c.sc,maxW,{lh:1.16,gap:22*k,color:S.brand,accent:S.accent,marker:true,ls:-1}),
+      ],{x,align:'left',top:64*k,maxH:H*.62});
+      label(ctx,S.sub,F('pretendard',700,40*k),x,H-90*k,'left',S.text,1,{shadow:14*k});
+      label(ctx,S.footer,F('pretendard',700,24*k),W-x,64*k+38*k*.95,'right',S.brand,.85);
+  }},
+  { id:'hand', name:'손글씨', overlay:50, draw(c){
+      const {ctx,W,H,k}=c; shade(ctx,W,H,S.overlay/100);
+      const maxW=W-140*k, tf=c.tf('pretendard');
+      stack(ctx,[
+        blk(ctx,S.top,s=>F('pen',400,s),112*k,maxW-80*k,{lh:1.5,color:S.text,custom(ctx,b,x,y,h){
+          const cy=y+h*.45, w=drawLine(ctx,b.lines[0],x,cy,'center',S.text,S.accent,false,b.size);
+          const x0=x-w/2, x1=x+w/2, uy=cy+b.size*.42, amp=b.size*.035, per=b.size*.1;
+          ctx.strokeStyle=S.text; ctx.lineWidth=3*k; ctx.lineCap='round'; ctx.globalAlpha*=.9; ctx.beginPath();
+          for(let px=x0;px<=x1;px+=3){ const py=uy+Math.sin((px-x0)/per)*amp; px===x0?ctx.moveTo(px,py):ctx.lineTo(px,py) }
+          ctx.stroke();
+          // 별 낙서
+          const sx=x1+b.size*.28, sy=cy-b.size*.36, R=b.size*.14; ctx.beginPath();
+          for(let i=0;i<10;i++){ const r=i%2?R*.45:R, a=-Math.PI/2+i*Math.PI/5; const px=sx+Math.cos(a)*r, py=sy+Math.sin(a)*r; i?ctx.lineTo(px,py):ctx.moveTo(px,py) }
+          ctx.closePath(); ctx.lineWidth=2.5*k; ctx.stroke();
+        }}),
+        blk(ctx,S.title,s=>F(tf,800,s),172*k*c.sc,maxW,{lh:1.1,gap:4*k,color:S.text,accent:S.accent,ls:-3}),
+        blk(ctx,S.sub,s=>F('pretendard',700,s),40*k,maxW-80*k,{lh:2.3,gap:44*k,custom(ctx,b,x,y,h){
+          const w=ctx.measureText(b.lines[0]).width, pw=w+b.size*1.8, ph=b.size*1.8;
+          ctx.fillStyle='rgba(255,255,255,.94)'; ctx.fillRect(x-pw/2,y+(h-ph)/2,pw,ph);
+          ctx.fillStyle=S.brand; ctx.textAlign='center'; ctx.fillText(b.lines[0],x,y+h/2+1);
+        }}),
+      ],{x:W/2,align:'center',cy:H/2-(S.footer.trim()?20*k:0),maxH:H-150*k});
+      label(ctx,S.footer,F('pretendard',500,28*k),W/2,H-52*k,'center',S.text,.8,{ls:1});
+  }},
+  { id:'corner', name:'코너', overlay:55, draw(c){
+      const {ctx,W,H,k}=c; shade(ctx,W,H,S.overlay/100);
+      const m=60*k, arm=140*k;
+      ctx.save(); ctx.strokeStyle=S.text; ctx.lineWidth=7*k; ctx.lineCap='square';
+      ctx.beginPath(); ctx.moveTo(m,m+arm); ctx.lineTo(m,m); ctx.lineTo(W-m,m); ctx.lineTo(W-m,m+arm); ctx.stroke();
+      ctx.beginPath(); ctx.moveTo(m,H-m-arm*.7); ctx.lineTo(m,H-m); ctx.lineTo(W*.42,H-m); ctx.stroke(); ctx.restore();
+      const x=m, maxW=W-2*m, tf=c.tf('pretendard');
+      stack(ctx,[
+        blk(ctx,S.top,s=>F('pretendard',500,s),104*k,maxW,{lh:1.2,color:S.text,ls:-2}),
+        blk(ctx,S.title,s=>F(tf,800,s),116*k*c.sc,maxW,{lh:1.18,color:S.text,accent:S.accent,ls:-2}),
+        blk(ctx,S.sub,s=>F('pretendard',300,s),34*k,maxW,{lh:1.4,gap:24*k,color:S.text,alpha:.75}),
+      ],{x,align:'left',cy:H*.57,maxH:H-2*m-2*arm*.8});
+      label(ctx,S.footer,F('pretendard',500,28*k),W-m,H-m,'right',S.text,.85);
+  }},
+];
+const tplById = id => TEMPLATES.find(t=>t.id===id) || TEMPLATES[0];
+
+function render(canvas,scale=1,tplId=S.tpl){
+  const [W,H]=RATIOS[S.ratio]||RATIOS['1:1'];
+  const cw=Math.round(W*scale), ch=Math.round(H*scale);
+  if(canvas.width!==cw) canvas.width=cw;
+  if(canvas.height!==ch) canvas.height=ch;
+  const ctx=canvas.getContext('2d');
+  ctx.setTransform(scale,0,0,scale,0,0);
+  ctx.clearRect(0,0,W,H);
+  drawBg(ctx,W,H);
+  const k=Math.min(1,.4+.6*H/1000);
+  tplById(tplId).draw({ ctx,W,H,k, sc:S.scale/100, tf:d=>S.font==='auto'?d:S.font });
+}
+
+/* ---------- 폰트 로딩 ---------- */
+let lastFontText='';
+function ensureFonts(){
+  const txt=(S.top+S.title+S.sub+S.footer).replace(/[\s*]/g,'')+'가나A1';
+  if(txt===lastFontText) return; lastFontText=txt;
+  const specs=Object.values(FONTS).filter(f=>f.family).map(f=>`${f.variable?700:400} 40px ${f.family}`);
+  const missing=specs.filter(s=>!document.fonts.check(s,txt));
+  if(!missing.length) return;
+  Promise.all(missing.map(s=>document.fonts.load(s,txt).catch(()=>{}))).then(()=>{ lastFontText+='·'; schedule() });
+}
+
+/* ---------- UI ---------- */
+const $=s=>document.querySelector(s);
+const main=$('#main'), wrap=$('#wrap');
+const thumbs=[];
+
+TEMPLATES.forEach(t=>{
+  const b=document.createElement('button'); b.className='tpl'; b.dataset.id=t.id;
+  const cv=document.createElement('canvas'); const sp=document.createElement('span'); sp.textContent=t.name;
+  b.append(cv,sp); $('#tpls').append(b); thumbs.push({id:t.id,cv,b});
+  b.addEventListener('click',()=>{ S.tpl=t.id; S.overlay=t.overlay; S.font='auto'; syncUI(); changed() });
+});
+Object.entries(FONTS).forEach(([k,f])=>{ const o=document.createElement('option'); o.value=k; o.textContent=f.label; $('#fontSel').append(o) });
+
+let raf=0;
+function schedule(){ if(raf) return; raf=requestAnimationFrame(()=>{ raf=0; draw() }) }
+function draw(){
+  render(main,1);
+  thumbs.forEach(t=>{ render(t.cv,.24,t.id); t.b.classList.toggle('on',t.id===S.tpl) });
+  const [W,H]=RATIOS[S.ratio];
+  wrap.style.maxWidth=`calc((100vh - 170px) * ${W/H})`;
+  wrap.classList.toggle('has-img',!!img);
+  $('#sizeTip').textContent=`${W} × ${H}px PNG로 저장됩니다`;
+  ensureFonts();
+}
+let saveT=0;
+function changed(){
+  schedule();
+  clearTimeout(saveT);
+  saveT=setTimeout(()=>{ const {zoom,x,y,...rest}=S; store.set(LAST_KEY,rest) },400);
+}
+function syncUI(except){
+  document.querySelectorAll('[data-k]').forEach(el=>{ if(el!==except) el.value=S[el.dataset.k] });
+}
+document.querySelectorAll('[data-k]').forEach(el=>{
+  el.addEventListener('input',()=>{
+    const k=el.dataset.k;
+    S[k] = (el.type==='range'||el.type==='number') ? (Number(el.value)||0) : el.value;
+    syncUI(el); changed();
+  });
+});
+
+/* 이미지 불러오기 */
+function loadFile(file){
+  if(!file || !file.type.startsWith('image/')) return toast('이미지 파일만 올릴 수 있어요');
+  const im=new Image();
+  im.onload=()=>{ img=im; S.zoom=100; S.x=0; S.y=0; syncUI(); schedule() };
+  im.onerror=()=>toast('이미지를 읽지 못했어요');
+  im.src=URL.createObjectURL(file);
+}
+$('#file').addEventListener('change',e=>{ loadFile(e.target.files[0]); e.target.value='' });
+$('#clearImg').addEventListener('click',()=>{ img=null; schedule() });
+['#drop','#stage'].forEach(sel=>{
+  const el=$(sel);
+  el.addEventListener('dragover',e=>{ e.preventDefault(); $('#drop').classList.add('over') });
+  el.addEventListener('dragleave',()=>$('#drop').classList.remove('over'));
+  el.addEventListener('drop',e=>{ e.preventDefault(); $('#drop').classList.remove('over'); loadFile(e.dataTransfer.files[0]) });
+});
+window.addEventListener('paste',e=>{
+  const it=[...(e.clipboardData?.items||[])].find(i=>i.type.startsWith('image/'));
+  if(it){ e.preventDefault(); loadFile(it.getAsFile()) }
+});
+
+/* 드래그로 위치, 휠로 크기 */
+let drag=null;
+main.addEventListener('pointerdown',e=>{ if(!img) return; drag={x:e.clientX,y:e.clientY}; main.setPointerCapture(e.pointerId) });
+main.addEventListener('pointermove',e=>{
+  if(!drag) return;
+  const r=RATIOS[S.ratio][0]/main.clientWidth;
+  S.x=Math.round(S.x+(e.clientX-drag.x)*r); S.y=Math.round(S.y+(e.clientY-drag.y)*r);
+  drag={x:e.clientX,y:e.clientY}; syncUI(); schedule();
+});
+['pointerup','pointercancel'].forEach(ev=>main.addEventListener(ev,()=>drag=null));
+main.addEventListener('wheel',e=>{
+  if(!img) return; e.preventDefault();
+  S.zoom=Math.max(50,Math.min(300,S.zoom+(e.deltaY<0?4:-4))); syncUI(); schedule();
+},{passive:false});
+
+/* 저장/복사/초기화 */
+function fileName(){
+  const first=plain(S.title.split('\n')[0]||'').trim().replace(/[\\/:*?"<>|\s]+/g,'_');
+  return (first||'thumbnail')+'.png';
+}
+function getBlob(){ render(main,1); return new Promise(res=>main.toBlob(res,'image/png')) }
+$('#download').addEventListener('click',async()=>{
+  const blob=await getBlob(); const a=document.createElement('a');
+  a.href=URL.createObjectURL(blob); a.download=fileName(); a.click();
+  setTimeout(()=>URL.revokeObjectURL(a.href),2000); toast('PNG로 저장했어요');
+});
+$('#copy').addEventListener('click',async()=>{
+  try{ await navigator.clipboard.write([new ClipboardItem({'image/png':getBlob()})]); toast('복사 완료! 블로그 에디터에 Ctrl+V 하세요') }
+  catch(e){ toast('이 브라우저에선 복사가 안 돼요. PNG 저장을 써주세요') }
+});
+$('#saveDefault').addEventListener('click',()=>{
+  const {zoom,x,y,...rest}=S; store.set(DEF_KEY,rest); toast('기본설정으로 저장했어요');
+});
+$('#reset').addEventListener('click',()=>{
+  S={...FACTORY,...(store.get(DEF_KEY)||{}),ratio:'1:1',zoom:100,x:0,y:0}; syncUI(); changed(); toast('기본설정으로 되돌렸어요');
+});
+
+let toastT=0;
+function toast(msg){ const t=$('#toast'); t.textContent=msg; t.classList.add('show'); clearTimeout(toastT); toastT=setTimeout(()=>t.classList.remove('show'),2200) }
+
+syncUI(); draw();
+document.fonts.ready.then(schedule);
+</script>
+</body>
+</html>
